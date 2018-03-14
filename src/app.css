@@ -1,0 +1,58 @@
+html,
+body,
+main {
+  height: 100%;
+}
+
+.row {
+  height: 100%;
+}
+
+#map {
+  height: 100%;
+  padding-left: 0;
+  overflow: scroll;
+  position: relative;
+}
+
+#hud {
+  height: 100%;
+}
+
+.map-layer {
+  position: absolute;
+}
+
+#text-layer {
+  z-index: 6;
+}
+
+#active-layer {
+  z-index: 5;
+}
+
+#locked-layer {
+  z-index: 4;
+}
+
+#system-layer {
+  z-index: 3;
+}
+
+#hyperlane-layer {
+  z-index: 2;
+}
+
+#background-layer {
+  z-index: 1;
+  background-color: black;
+}
+
+input[readonly] {
+  background-color: #eee !important;
+}
+
+textarea {
+  resize: none;
+  background-color: #eee !important;
+}

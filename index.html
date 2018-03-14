@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Stellaris Galaxy Tool</title>
+</head>
+
+<body>
+  <!-- Map Import Modal -->
+  <div class="modal fade" id="import-modal" tabindex="-1" role="dialog" aria-labelledby="import-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="import-modal-label">Map Import</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label for="import-map-file-input">Map File</label>
+              <input type="file" class="form-control-file" id="import-map-file-input" accept=".txt">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Dismiss</button>
+          <button type="button" class="btn btn-primary" id="import-map-btn" data-dismiss="modal">Import</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scenario Settings Modal -->
+  <div class="modal fade" id="settings-modal" tabindex="-1" role="dialog" aria-labelledby="settings-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="settings-modal-label">Scenario Settings</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-row">
+              <div class="form-group col-8">
+                <label for="settings-name-input">name</label>
+                <input type="text" class="form-control" id="settings-name-input" placeholder="Map Name">
+              </div>
+              <div class="form-group col-4">
+                <label for="settings-priority-input">priority</label>
+                <input type="number" class="form-control" id="settings-priority-input" placeholder="Priority">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-4">
+                <label for="settings-empire-min-input">num_empires.min</label>
+                <input type="number" class="form-control" id="settings-empire-min-input" min="0" step="1" placeholder="Min">
+              </div>
+              <div class="form-group col-4">
+                <label for="settings-empire-max-input">num_empires.max</label>
+                <input type="number" class="form-control" id="settings-empire-max-input" min="0" step="1" placeholder="Max">
+              </div>
+              <div class="form-group col-4">
+                <label for="settings-empire-default-input">num_empire_default</label>
+                <input type="number" class="form-control" id="settings-empire-default-input" min="0" step="1" placeholder="Default">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-4">
+                <label for="settings-fallen-default-input">fallen_empire_default</label>
+                <input type="number" class="form-control" id="settings-fallen-default-input" min="0" step="1" placeholder="Default">
+              </div>
+              <div class="form-group col-4">
+                <label for="settings-fallen-max-input">fallen_empire_max</label>
+                <input type="number" class="form-control" id="settings-fallen-max-input" min="0" step="1" placeholder="Max">
+              </div>
+              <div class="form-group col-4">
+                <label for="settings-advanced-default-input">advanced_empire_default</label>
+                <input type="number" class="form-control" id="settings-advanced-default-input" min="0" step="1" placeholder="Default">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-4">
+                <label for="settings-fallen-default-input">colonizable_planet_odds</label>
+                <input type="number" class="form-control" id="settings-colonizable-odds-input" min="0" max="1" step="0.01" placeholder="Odds">
+              </div>
+            </div>
+
+            <div class="custom-control custom-checkbox custom-control-inline">
+              <input type="checkbox" class="custom-control-input" id="settings-default-check">
+              <label class="custom-control-label" for="settings-default-check">default</label>
+            </div>
+
+            <div class="custom-control custom-checkbox custom-control-inline">
+              <input type="checkbox" class="custom-control-input" id="settings-random-hyperlanes-check">
+              <label class="custom-control-label" for="settings-random-hyperlanes-check">random_hyperlanes</label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Dismiss</button>
+          <button type="button" class="btn btn-primary" id="save-settings-btn" data-dismiss="modal">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="container-fluid">
+    <div class="row">
+      <!-- Canvas UI -->
+      <div id="map" class="col-10">
+        <canvas class="map-layer" id="text-layer" width="4000" height="4000"></canvas>
+        <canvas class="map-layer" id="active-layer" width="4000" height="4000"></canvas>
+        <canvas class="map-layer" id="locked-layer" width="4000" height="4000"></canvas>
+        <canvas class="map-layer" id="system-layer" width="4000" height="4000"></canvas>
+        <canvas class="map-layer" id="hyperlane-layer" width="4000" height="4000"></canvas>
+        <canvas class="map-layer" id="background-layer" width="4000" height="4000"></canvas>
+      </div>
+
+      <!-- Controls Sidebar UI -->
+      <div id="hud" class="col-2">
+        <form>
+          <div class="form-row">
+            <div class="form-group col-4">
+              <label for="system-id-display">System ID</label>
+              <input type="text" class="form-control" id="system-id-display" readonly>
+            </div>
+
+            <div class="form-group col-8">
+              <label for="system-name-display">System Name</label>
+              <input type="text" class="form-control" id="system-name-display" readonly>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="linked-systems-display">Linked Systems</label>
+            <textarea class="form-control" id="linked-systems-display" rows="10" readonly></textarea>
+            <small class="form-text text-muted">Linked systems may not be in sorted order..</small>
+          </div>
+
+          <div class="form-group">
+            <label for="toggle-system-lock-btn">System Lock</label>
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <button class="btn btn-info" id="toggle-system-lock-btn" type="button">Toggle</button>
+              </div>
+              <input type="text" id="system-lock-display" class="form-control" readonly>
+            </div>
+            <small class="form-text text-muted">Lock prevents edits to incoming/outing lanes.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="link-radius-input">Radial Lane Generation</label>
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <button class="btn btn-primary" id="add-nearby-lanes-btn" type="button">Add</button>
+              </div>
+              <input type="number" class="form-control" id="link-radius-input" min="0" max="1000" step="1" value="50" placeholder="Radius">
+              <div class="input-group-append">
+                <button id="remove-nearby-lanes-btn" class="btn btn-danger" type="button">Remove</button>
+              </div>
+            </div>
+            <small class="form-text text-muted">Search area is centered on active system.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="download-map-btn">Export Static Galaxy Scenario</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="map-name-input" placeholder="File Name">
+              <div class="input-group-append">
+                <button id="download-map-btn" class="btn btn-success" type="button">Save</button>
+              </div>
+            </div>
+            <small class="form-text text-muted">Saves map as a <code>.txt</code> file.</small>
+          </div>
+
+          <div class="form-group">
+            <button type="button" class="btn btn-primary btn-block" id="open-settings-btn" data-toggle="modal" data-target="#settings-modal">Open Settings...</button>
+          </div>
+
+          <div class="form-group">
+            <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#import-modal">Import Map...</button>
+          </div>
+
+          <div class="form-group">
+            <button type="button" class="btn btn-danger btn-block" id="reset-btn">Reset</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script src="./dist/app.js"></script>
+</body>
+
+</html>

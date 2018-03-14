@@ -1,0 +1,30 @@
+[{
+  "id": 1,
+  "name": "Origin System",
+  "x": 0,
+  "y": 0
+},
+{
+  "id": 2,
+  "name": "System 2",
+  "x": 0,
+  "y": 5
+},
+{
+  "id": 3,
+  "name": "System 3",
+  "x": 5,
+  "y": 5
+},
+{
+  "id": 4,
+  "name": "System 4",
+  "x": 5,
+  "y": 0
+},
+{
+  "id": 5,
+  "name": "System Far-off",
+  "x": 40,
+  "y": 30
+}]
