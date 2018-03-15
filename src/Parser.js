@@ -141,16 +141,32 @@ export class Parser {
 
   // TODO: add variable system position parsing support
   parseSystems () {
-    const systemExp = XRegExp(`system\\s*=\\s*{\\s*id\\s*=\\s*"(?P<id>[0-9]+)"\\s*name\\s*=\\s*"(?P<name>[A-Za-z0-9' _.-]*)"\\s*position\\s*=\\s*{\\s*x\\s*=\\s*(?P<x>[-]?[0-9]+)\\s*y\\s*=\\s*(?P<y>[-]?[0-9]+)`)
     const systems = []
+    const systemBaseExp = XRegExp(`system\\s*=\\s*{\\s*id\\s*=\\s*"(?P<id>[0-9]+)"\\s*name\\s*=\\s*"(?P<name>[A-Za-z0-9' _.-]*)"`)
+    const systemInitExp = XRegExp(`initializer\\s*=\\s*(?P<init>[A-Za-z0-9_]*)`)
+    const systemPosExp = XRegExp('position\\s*=\\s*{\\s*x\\s*=\\s*(?P<x>[-]?[0-9]+)\\s*y\\s*=\\s*(?P<y>[-]?[0-9]+)')
+
     for (let i = 0; i < this.lines.length; i++) {
-      const match = XRegExp.exec(this.lines[i], systemExp)
-      if (match) {
-        const id = parseInt(match.id, 10)
-        const name = match.name
-        const x = -1 * parseInt(match.x, 10)
-        const y = parseInt(match.y, 10)
-        systems.push(new System(id, name, x, y))
+      const curLine = this.lines[i]
+      const baseMatch = XRegExp.exec(curLine, systemBaseExp)
+      if (baseMatch) {
+        const system = {
+          id: parseInt(baseMatch.id, 10),
+          name: baseMatch.name
+        }
+
+        const posMatch = XRegExp.exec(curLine, systemPosExp)
+        if (posMatch) {
+          system.x = -1 * parseInt(posMatch.x, 10)
+          system.y = parseInt(posMatch.y, 10)
+        }
+
+        const initMatch = XRegExp.exec(curLine, systemInitExp)
+        if (initMatch) {
+          system.init = initMatch.init
+        }
+
+        systems.push(System.fromObject(system))
       }
     }
     return systems

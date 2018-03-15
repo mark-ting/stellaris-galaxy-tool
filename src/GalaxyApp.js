@@ -432,6 +432,7 @@ export default class GalaxyApp {
     if (!this.activeSystem) {
       document.getElementById('system-id-display').value = 'None'
       document.getElementById('system-name-display').value = 'None'
+      document.getElementById('system-init-display').value = 'None'
       document.getElementById('linked-systems-display').value = 'Please select a system.'
       document.getElementById('system-lock-display').value = 'None'
       return
@@ -439,6 +440,7 @@ export default class GalaxyApp {
 
     document.getElementById('system-id-display').value = this.activeSystem
     document.getElementById('system-name-display').value = this.Scenario.getSystem(this.activeSystem).name
+    document.getElementById('system-init-display').value = this.Scenario.getSystem(this.activeSystem).init ? this.Scenario.getSystem(this.activeSystem).init : 'No Initializer'
 
     let linkedSystemText = ''
     for (const id of this.Scenario.adjSystems[this.activeSystem]) {

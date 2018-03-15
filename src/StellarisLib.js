@@ -13,10 +13,14 @@ import { Point, Datapoint } from './QuadTree'
  */
 
 export class System {
-  constructor (id, name, x, y) {
+  constructor (id, name, x, y, init) {
     this.id = id
     this.name = name
     this.location = new Point(x, y)
+
+    if (init) {
+      this.init = init
+    }
   }
 
   getDatapoint () {
@@ -24,11 +28,11 @@ export class System {
   }
 
   static fromObject (obj) {
-    return new System(obj.id, obj.name, obj.x, obj.y)
+    return new System(obj.id, obj.name, obj.x, obj.y, obj.init)
   }
 
   static rehydrate (systemObj) {
-    return new System(systemObj.id, systemObj.name, systemObj.location.x, systemObj.location.y)
+    return new System(systemObj.id, systemObj.name, systemObj.location.x, systemObj.location.y, systemObj.init)
   }
 }
 
@@ -145,7 +149,10 @@ export class Scenario {
       const system = this.systems[systemId]
       const name = system.name
       const location = system.location
-      systemSection += `\tsystem = { id = "${systemId}" name = "${name}" position = { x = ${-location.x} y = ${location.y} } }\r\n`
+      const nameIdStr = `id = "${systemId}" name = "${name}"`
+      const posStr = ` position = { x = ${-location.x} y = ${location.y} }`
+      const initStr = system.init ? `initializer = ${system.init}` : ''
+      systemSection += `\tsystem = { ${nameIdStr} ${posStr} ${initStr}}\r\n`
     }
     return systemSection
   }
