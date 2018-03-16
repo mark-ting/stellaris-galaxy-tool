@@ -229,7 +229,8 @@ export class Scenario {
       const yStr = system.hasOwnProperty('minY') ? `y = { min = ${system.minY} max = ${system.maxY} }` : `y = ${location.y}`
       const posStr = `position = { ${xStr} ${yStr} }`
       const initStr = system.hasOwnProperty('init') ? ` initializer = ${system.init} ` : ''
-      const spawnStr = system.hasOwnProperty('spawnBase') ? ` spawn_weight = { base = ${system.spawnBase} modifier = { add = ${system.spawnAdd} has_country_flag = ${system.countryFlag} } ` : ''
+      const spawnStr = system.hasOwnProperty('spawnBase') ? ` spawn_weight = { base = ${system.spawnBase} modifier = { add = ${system.spawnAdd} has_country_flag = ${system.countryFlag} } } ` : ''
+
 
       systemSection += `\tsystem = { ${nameIdStr} ${posStr} ${initStr}${spawnStr}}\r\n`
     }
