@@ -17,6 +17,7 @@ main {
 
 #hud {
   height: 100%;
+  overflow-y: scroll;
 }
 
 .map-layer {
