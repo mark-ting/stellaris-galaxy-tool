@@ -27,12 +27,28 @@ export class System {
     return new Datapoint(this.id, this.location)
   }
 
-  static fromObject (obj) {
-    return new System(obj.id, obj.name, obj.x, obj.y, obj.init)
+  toJSON () {
+    const clone = { ...this }
+    clone.x = this.location.x
+    clone.y = this.location.y
+    delete clone.location
+    return clone
   }
 
+  /**
+   * Rehydrates a flattened system object (i.e. parsed class.toJSON()).
+   * @static
+   * @param {any} systemObj
+   * @returns {System}
+   * @memberof System
+   */
   static rehydrate (systemObj) {
-    return new System(systemObj.id, systemObj.name, systemObj.location.x, systemObj.location.y, systemObj.init)
+    const system = new System()
+    Object.assign(system, systemObj)
+    system.location = new Point(system.x, system.y)
+    delete system.x
+    delete system.y
+    return system
   }
 }
 
@@ -128,6 +144,20 @@ export class Scenario {
     return this.adjSystems[s1].has(s2)
   }
 
+  exportSystems () {
+    return Object.values(this.systems)
+  }
+
+  exportHyperlanes () {
+    const exportedLanes = []
+    for (const src in this.hyperlanes) {
+      for (const dst of this.hyperlanes[src]) {
+        exportedLanes.push([parseInt(src, 10), dst])
+      }
+    }
+    return exportedLanes
+  }
+
   serializeSettings () {
     let settingStr = '\t########\r\n\t#Settings\r\n\t########\r\n'
     settingStr += `\tname = "${this.settings.name}"\r\n`
@@ -150,9 +180,13 @@ export class Scenario {
       const name = system.name
       const location = system.location
       const nameIdStr = `id = "${systemId}" name = "${name}"`
-      const posStr = ` position = { x = ${-location.x} y = ${location.y} }`
-      const initStr = system.init ? `initializer = ${system.init}` : ''
-      systemSection += `\tsystem = { ${nameIdStr} ${posStr} ${initStr}}\r\n`
+      const xStr = system.hasOwnProperty('minX') ? `x = { min = ${system.minX} max = ${system.maxX} }` : `x = ${-location.x}`
+      const yStr = system.hasOwnProperty('minY') ? `y = { min = ${system.minY} max = ${system.maxY} }` : `y = ${location.y}`
+      const posStr = `position = { ${xStr} ${yStr} }`
+      const initStr = system.hasOwnProperty('init') ? ` initializer = ${system.init} ` : ''
+      const spawnStr = system.hasOwnProperty('spawnBase') ? ` spawn_weight = { base = ${system.spawnBase} modifier = { add = ${system.spawnAdd} has_country_flag = ${system.countryFlag} } ` : ''
+
+      systemSection += `\tsystem = { ${nameIdStr} ${posStr} ${initStr}${spawnStr}}\r\n`
     }
     return systemSection
   }

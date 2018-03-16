@@ -244,7 +244,7 @@ export default class GalaxyApp {
     } else {
       let systems = await this.getJSON('./default.json')
       for (let i = 0; i < systems.length; i++) {
-        const system = System.fromObject(systems[i])
+        const system = System.rehydrate(systems[i])
         this.addSystem(system)
       }
     }
@@ -451,13 +451,8 @@ export default class GalaxyApp {
   }
 
   saveState () {
-    const exportedSystems = Object.values(this.Scenario.systems)
-    const exportedLanes = []
-    for (const src in this.Scenario.hyperlanes) {
-      for (const dst of this.Scenario.hyperlanes[src]) {
-        exportedLanes.push([parseInt(src, 10), dst])
-      }
-    }
+    const exportedSystems = this.Scenario.exportSystems()
+    const exportedLanes = this.Scenario.exportHyperlanes()
     const exportedLocks = Array.from(this.lockedSystems)
 
     localStorage.setItem('prev', 'set')
