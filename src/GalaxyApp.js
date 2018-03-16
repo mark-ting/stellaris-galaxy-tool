@@ -485,12 +485,14 @@ export default class GalaxyApp {
   }
 
   saveState () {
+    const exportedSettings = this.Scenario.settings
     const exportedSystems = this.Scenario.exportSystems()
     const exportedHyperlanes = this.Scenario.exportHyperlanes()
     const exportedNebulae = this.Scenario.exportNebulae()
     const exportedLocks = Array.from(this.lockedSystems)
 
     localStorage.setItem('prev', 'set')
+    localStorage.setItem('settings', JSON.stringify(exportedSettings))
     localStorage.setItem('systems', JSON.stringify(exportedSystems))
     localStorage.setItem('lanes', JSON.stringify(exportedHyperlanes))
     localStorage.setItem('nebulae', JSON.stringify(exportedNebulae))
@@ -499,10 +501,13 @@ export default class GalaxyApp {
 
   loadState () {
     if (localStorage.getItem('prev') === 'set') {
+      const importedSettings = JSON.parse(localStorage.getItem('settings'))
       const importedSystems = JSON.parse(localStorage.getItem('systems')).map(System.rehydrate)
       const importedHyperlanes = JSON.parse(localStorage.getItem('lanes'))
       const importedNebulae = JSON.parse(localStorage.getItem('nebulae')).map(Nebula.rehydrate)
       const importedLocks = JSON.parse(localStorage.getItem('locks'))
+
+      this.Settings.load(importedSettings)
 
       for (let i = 0; i < importedSystems.length; i++) {
         const system = importedSystems[i]
