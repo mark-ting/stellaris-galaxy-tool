@@ -139,18 +139,58 @@ export class Parser {
     return settings
   }
 
-  // TODO: add variable system position parsing support
   parseSystems () {
-    const systemExp = XRegExp(`system\\s*=\\s*{\\s*id\\s*=\\s*"(?P<id>[0-9]+)"\\s*name\\s*=\\s*"(?P<name>[A-Za-z0-9' _.-]*)"\\s*position\\s*=\\s*{\\s*x\\s*=\\s*(?P<x>[-]?[0-9]+)\\s*y\\s*=\\s*(?P<y>[-]?[0-9]+)`)
     const systems = []
+    const systemBaseExp = XRegExp(`system\\s*=\\s*{\\s*id\\s*=\\s*"(?P<id>[0-9]+)"\\s*name\\s*=\\s*"(?P<name>[A-Za-z0-9' _.-]*)"`)
+    const systemXPosExp = XRegExp(`x\\s*=\\s*((?P<x>[-]?[0-9]+)|{\\s*min\\s*=\\s*(?P<min>[-]?[0-9]+)\\s*max\\s*=\\s*(?P<max>[-]?[0-9]+))`)
+    const systemYPosExp = XRegExp(`y\\s*=\\s*((?P<y>[-]?[0-9]+)|{\\s*min\\s*=\\s*(?P<min>[-]?[0-9]+)\\s*max\\s*=\\s*(?P<max>[-]?[0-9]+))`)
+    const systemInitExp = XRegExp(`initializer\\s*=\\s*(?P<init>[A-Za-z0-9_]*)`)
+    const systemSpawnExp = XRegExp(`spawn_weight\\s*=\\s*{\\s*base\\s*=\\s*(?P<base>[0-9]*)\\s*modifier\\s*=\\s*{\\s*add\\s*=\\s*(?P<add>[0-9]*)\\s*has_country_flag\\s*=\\s*(?P<flag>[A-Za-z0-9_]*)`)
+
     for (let i = 0; i < this.lines.length; i++) {
-      const match = XRegExp.exec(this.lines[i], systemExp)
-      if (match) {
-        const id = parseInt(match.id, 10)
-        const name = match.name
-        const x = -1 * parseInt(match.x, 10)
-        const y = parseInt(match.y, 10)
-        systems.push(new System(id, name, x, y))
+      const curLine = this.lines[i]
+      const baseMatch = XRegExp.exec(curLine, systemBaseExp)
+      if (baseMatch) {
+        const system = {
+          id: parseInt(baseMatch.id, 10),
+          name: baseMatch.name
+        }
+
+        const xPosMatch = XRegExp.exec(curLine, systemXPosExp)
+        if (xPosMatch) {
+          if (xPosMatch.x) {
+            system.x = -1 * parseInt(xPosMatch.x, 10)
+          } else {
+            system.minX = parseInt(xPosMatch.min, 10)
+            system.maxX = parseInt(xPosMatch.max, 10)
+            system.x = Math.floor(-1 * (system.minX + system.maxX) / 2)
+          }
+        }
+
+        const yPosMatch = XRegExp.exec(curLine, systemYPosExp)
+        if (yPosMatch) {
+          if (yPosMatch.y) {
+            system.y = parseInt(yPosMatch.y, 10)
+          } else {
+            system.minY = parseInt(yPosMatch.min, 10)
+            system.maxY = parseInt(yPosMatch.max, 10)
+            system.y = Math.floor((system.minY + system.maxY) / 2)
+          }
+        }
+
+        const initMatch = XRegExp.exec(curLine, systemInitExp)
+        if (initMatch) {
+          system.init = initMatch.init
+        }
+
+        const spawnMatch = XRegExp.exec(curLine, systemSpawnExp)
+        if (spawnMatch) {
+          system.spawnBase = parseInt(spawnMatch.base, 10)
+          system.spawnAdd = parseInt(spawnMatch.add, 10)
+          system.countryFlag = spawnMatch.flag
+        }
+
+        systems.push(System.rehydrate(system))
       }
     }
     return systems
@@ -176,8 +216,7 @@ export class Parser {
     for (let i = 0; i < this.lines.length; i++) {
       const match = XRegExp.exec(this.lines[i], nebulaExp)
       if (match) {
-        const nebula = new Nebula(match.name, match.x, match.y, match.radius)
-        nebulae.push(nebula)
+        nebulae.push(new Nebula(match.name, parseInt(match.x, 10), parseInt(match.y, 10), parseInt(match.radius, 10)))
       }
     }
     return nebulae

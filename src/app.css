@@ -28,18 +28,22 @@ main {
 }
 
 #active-layer {
-  z-index: 5;
+  z-index: 6;
 }
 
 #locked-layer {
-  z-index: 4;
+  z-index: 5;
 }
 
 #system-layer {
-  z-index: 3;
+  z-index: 4;
 }
 
 #hyperlane-layer {
+  z-index: 3;
+}
+
+#nebula-layer {
   z-index: 2;
 }
 

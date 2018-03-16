@@ -1,5 +1,5 @@
 import { Point, Rectangle, QuadTree } from './QuadTree'
-import { System, Scenario } from './StellarisLib'
+import { System, Scenario, Nebula } from './StellarisLib'
 import { SettingsHandler } from './SettingsHandler'
 import { Parser } from './Parser'
 
@@ -46,6 +46,7 @@ export default class GalaxyApp {
     this.layers.text = document.getElementById('text-layer')
     this.layers.active = document.getElementById('active-layer')
     this.layers.locked = document.getElementById('locked-layer')
+    this.layers.nebula = document.getElementById('nebula-layer')
     this.layers.system = document.getElementById('system-layer')
     this.layers.hyperlane = document.getElementById('hyperlane-layer')
   }
@@ -191,10 +192,10 @@ export default class GalaxyApp {
           this.reset()
           this.clearState()
 
-          // TODO: add Nebula support
           const settings = this.Parser.parseSettings()
           const systems = this.Parser.parseSystems()
           const hyperlanes = this.Parser.parseHyperlanes()
+          const nebulae = this.Parser.parseNebulae()
 
           this.Settings.load(settings)
 
@@ -210,6 +211,12 @@ export default class GalaxyApp {
             const dst = hyperlane[1]
             this.Scenario.addHyperlane(src, dst)
           }
+
+          for (let i = 0; i < nebulae.length; i++) {
+            const nebula = nebulae[i]
+            this.Scenario.addNebula(nebula)
+          }
+
           this.update()
         })
     })
@@ -244,7 +251,7 @@ export default class GalaxyApp {
     } else {
       let systems = await this.getJSON('./default.json')
       for (let i = 0; i < systems.length; i++) {
-        const system = System.fromObject(systems[i])
+        const system = System.rehydrate(systems[i])
         this.addSystem(system)
       }
     }
@@ -379,6 +386,20 @@ export default class GalaxyApp {
     }
   }
 
+  drawNebula (nebulaId) {
+    const nebula = this.Scenario.nebulae[nebulaId]
+    const location = nebula.location
+    const radius = nebula.radius
+    const canvas = this.layers.nebula
+    const ctx = canvas.getContext('2d')
+    ctx.beginPath()
+
+    ctx.arc(4 * (500 - location.x), 4 * (location.y + 500), radius, 0, 2 * Math.PI, false)
+    ctx.globalAlpha = 0.25
+    ctx.fillStyle = 'magenta'
+    ctx.fill()
+  }
+
   drawHyperlane (s1, s2) {
     const ctx = this.layers.hyperlane.getContext('2d')
     const src = this.Scenario.getSystem(s1).location
@@ -426,19 +447,34 @@ export default class GalaxyApp {
         this.drawHyperlane(src, dst)
       }
     }
+
+    // Draw nebula
+    this.clearLayer(this.layers.nebula)
+    for (const nebulaId in this.Scenario.nebulae) {
+      this.drawNebula(nebulaId)
+    }
   }
 
   updateSidebarUI () {
     if (!this.activeSystem) {
       document.getElementById('system-id-display').value = 'None'
       document.getElementById('system-name-display').value = 'None'
+      document.getElementById('system-init-display').value = 'None'
+      document.getElementById('system-spawn-base-display').value = 'None'
+      document.getElementById('system-spawn-add-display').value = 'None'
+      document.getElementById('system-country-flag-display').value = 'None'
       document.getElementById('linked-systems-display').value = 'Please select a system.'
       document.getElementById('system-lock-display').value = 'None'
       return
     }
 
-    document.getElementById('system-id-display').value = this.activeSystem
-    document.getElementById('system-name-display').value = this.Scenario.getSystem(this.activeSystem).name
+    const system = this.Scenario.getSystem(this.activeSystem)
+    document.getElementById('system-id-display').value = system.id
+    document.getElementById('system-name-display').value = system.name
+    document.getElementById('system-init-display').value = system.hasOwnProperty('init') ? this.Scenario.getSystem(this.activeSystem).init : 'No Initializer'
+    document.getElementById('system-spawn-base-display').value = system.hasOwnProperty('spawnBase') ? system.spawnBase : 'N/A'
+    document.getElementById('system-spawn-add-display').value = system.hasOwnProperty('spawnAdd') ? system.spawnAdd : 'N/A'
+    document.getElementById('system-country-flag-display').value = system.hasOwnProperty('countryFlag') ? system.countryFlag : 'N/A'
 
     let linkedSystemText = ''
     for (const id of this.Scenario.adjSystems[this.activeSystem]) {
@@ -449,25 +485,23 @@ export default class GalaxyApp {
   }
 
   saveState () {
-    const exportedSystems = Object.values(this.Scenario.systems)
-    const exportedLanes = []
-    for (const src in this.Scenario.hyperlanes) {
-      for (const dst of this.Scenario.hyperlanes[src]) {
-        exportedLanes.push([parseInt(src, 10), dst])
-      }
-    }
+    const exportedSystems = this.Scenario.exportSystems()
+    const exportedHyperlanes = this.Scenario.exportHyperlanes()
+    const exportedNebulae = this.Scenario.exportNebulae()
     const exportedLocks = Array.from(this.lockedSystems)
 
     localStorage.setItem('prev', 'set')
     localStorage.setItem('systems', JSON.stringify(exportedSystems))
-    localStorage.setItem('lanes', JSON.stringify(exportedLanes))
+    localStorage.setItem('lanes', JSON.stringify(exportedHyperlanes))
+    localStorage.setItem('nebulae', JSON.stringify(exportedNebulae))
     localStorage.setItem('locks', JSON.stringify(exportedLocks))
   }
 
   loadState () {
     if (localStorage.getItem('prev') === 'set') {
       const importedSystems = JSON.parse(localStorage.getItem('systems')).map(System.rehydrate)
-      const importedLanes = JSON.parse(localStorage.getItem('lanes'))
+      const importedHyperlanes = JSON.parse(localStorage.getItem('lanes'))
+      const importedNebulae = JSON.parse(localStorage.getItem('nebulae')).map(Nebula.rehydrate)
       const importedLocks = JSON.parse(localStorage.getItem('locks'))
 
       for (let i = 0; i < importedSystems.length; i++) {
@@ -475,9 +509,14 @@ export default class GalaxyApp {
         this.addSystem(system)
       }
 
-      for (let i = 0; i < importedLanes.length; i++) {
-        const s1 = importedLanes[i][0]
-        const s2 = importedLanes[i][1]
+      for (let i = 0; i < importedNebulae.length; i++) {
+        const nebula = importedNebulae[i]
+        this.Scenario.addNebula(nebula)
+      }
+
+      for (let i = 0; i < importedHyperlanes.length; i++) {
+        const s1 = importedHyperlanes[i][0]
+        const s2 = importedHyperlanes[i][1]
         this.Scenario.addHyperlane(s1, s2)
       }
 
@@ -489,7 +528,9 @@ export default class GalaxyApp {
   clearState () {
     localStorage.removeItem('prev')
     localStorage.removeItem('systems')
+    localStorage.removeItem('nebulae')
     localStorage.removeItem('lanes')
+    localStorage.removeItem('locks')
   }
 
   update () {
