@@ -139,7 +139,6 @@ export class Parser {
     return settings
   }
 
-  // TODO: add variable system position parsing support
   parseSystems () {
     const systems = []
     const systemBaseExp = XRegExp(`system\\s*=\\s*{\\s*id\\s*=\\s*"(?P<id>[0-9]+)"\\s*name\\s*=\\s*"(?P<name>[A-Za-z0-9' _.-]*)"`)
@@ -217,8 +216,7 @@ export class Parser {
     for (let i = 0; i < this.lines.length; i++) {
       const match = XRegExp.exec(this.lines[i], nebulaExp)
       if (match) {
-        const nebula = new Nebula(match.name, match.x, match.y, match.radius)
-        nebulae.push(nebula)
+        nebulae.push(new Nebula(match.name, parseInt(match.x, 10), parseInt(match.y, 10), parseInt(match.radius, 10)))
       }
     }
     return nebulae

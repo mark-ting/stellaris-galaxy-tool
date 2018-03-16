@@ -36,7 +36,7 @@ export class System {
   }
 
   /**
-   * Rehydrates a flattened system object (i.e. parsed class.toJSON()).
+   * Rehydrates a flattened System object (i.e. parsed class.toJSON()).
    * @static
    * @param {any} systemObj
    * @returns {System}
@@ -52,13 +52,41 @@ export class System {
   }
 }
 
-// TODO: add Nebula functionality
 export class Nebula {
   constructor (name, x, y, radius) {
-    this.id = Symbol(name)
     this.name = name
     this.location = new Point(x, y)
     this.radius = radius
+    this.generateId()
+  }
+
+  generateId () {
+    this.id = `n.${this.location.x}.${this.location.y}.${this.radius}`
+  }
+
+  toJSON () {
+    const clone = { ...this }
+    clone.x = this.location.x
+    clone.y = this.location.y
+    delete clone.location
+    return clone
+  }
+
+  /**
+   * Rehydrates a flattened Nebula object (i.e. parsed class.toJSON()).
+   * @static
+   * @param {any} nebulaObj
+   * @returns {Nebula}
+   * @memberof Nebula
+   */
+  static rehydrate (nebulaObj) {
+    const nebula = new Nebula()
+    Object.assign(nebula, nebulaObj)
+    nebula.location = new Point(nebula.x, nebula.y)
+    delete nebula.x
+    delete nebula.y
+    nebula.generateId()
+    return nebula
   }
 }
 
@@ -83,6 +111,7 @@ export class Scenario {
     }
 
     this.systems = {}
+    this.nebulae = {}
     this.adjSystems = {}
     this.hyperlanes = {}
   }
@@ -140,6 +169,18 @@ export class Scenario {
     this.hyperlanes[src].delete(dst)
   }
 
+  addNebula (nebula) {
+    if (this.nebulae[nebula.id]) { return }
+
+    this.nebulae[nebula.id] = nebula
+  }
+
+  removeNebula (nebulaId) {
+    if (!this.nebulae[nebulaId]) { return }
+
+    delete this.nebulae[nebulaId]
+  }
+
   systemsLinked (s1, s2) {
     return this.adjSystems[s1].has(s2)
   }
@@ -156,6 +197,10 @@ export class Scenario {
       }
     }
     return exportedLanes
+  }
+
+  exportNebulae () {
+    return Object.values(this.nebulae)
   }
 
   serializeSettings () {
@@ -206,8 +251,11 @@ export class Scenario {
 
   serializeNebulae () {
     let nebulaSection = '\t########\r\n\t#Nebulae\r\n\t########\r\n'
-    // TODO: add Nebula serialization
-    nebulaSection += '\t# If you see this, remind mat3049 to add this functionality.'
+    for (const nebulaId in this.nebulae) {
+      const nebula = this.nebulae[nebulaId]
+      const location = nebula.location
+      nebulaSection += `\tnebula = { name = "${nebula.name}" position = { x = ${location.x} y = ${location.y} } radius = ${nebula.radius} }\r\n`
+    }
     return nebulaSection
   }
 
