@@ -28,7 +28,9 @@ export class Parser {
       }
       reader.onload = (e) => {
         const contents = e.target.result
-        this.lines = contents.split(/\r\n?|\n/)
+        const lines = contents.split(/\r\n?|\n/)
+        const commentExp = XRegExp(`^\\s*#`)
+        this.lines = lines.filter(line => !XRegExp.test(line, commentExp))
         resolve(reader.result)
       }
       reader.readAsText(file)
@@ -53,7 +55,7 @@ export class Parser {
     const fallenEmpireMaxExp = XRegExp(`\s*fallen_empire_max\\s*=\\s*(?P<max>[0-9]*)`)
     const advancedEmpireDefaultExp = XRegExp(`\s*advanced_empire_default\\s*=\\s*(?P<default>[0-9]*)`)
     const colonizablePlanetOddsExp = XRegExp(`\s*colonizable_planet_odds\\s*=\\s*(?P<odds>[0-9.]*)`)
-    const randomHyperlaneExp = XRegExp(`\s*random_hyperlanes\\s*=\\s*(?P<isRandom>[a-zA-Z]{0,3})\b`)
+    const randomHyperlaneExp = XRegExp(`\s*random_hyperlanes\\s*=\\s*(?P<isRandom>[a-zA-Z]{0,3})`)
 
     for (let i = 0; i < this.lines.length; i++) {
       const match = XRegExp.exec(this.lines[i], nameExp)
