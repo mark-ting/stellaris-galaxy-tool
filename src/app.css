@@ -15,7 +15,7 @@ main {
   position: relative;
 }
 
-#hud {
+#sidebar {
   height: 100%;
   overflow-y: scroll;
 }
