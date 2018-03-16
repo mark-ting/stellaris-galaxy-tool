@@ -7,3 +7,8 @@ import GalaxyApp from './GalaxyApp'
 
 const app = new GalaxyApp()
 app.initData()
+
+if (DEV) {
+  console.log(`DEV: Running application version: v${VERSION}`)
+  console.log(app)
+}
