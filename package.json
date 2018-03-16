@@ -9,15 +9,17 @@
   },
   "author": "Mark Ting",
   "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mat3049/stellaris-galaxy-tool.git"
+  },
   "dependencies": {
-    "bootstrap": "^4.0.0",
-    "express": "^4.16.2",
-    "jquery": "^3.3.1",
-    "popper.js": "^1.12.9",
-    "xregexp": "^4.1.1"
+    "express": "^4.16.2"
   },
   "devDependencies": {
     "ajv": "^6.1.1",
+    "bootstrap": "^4.0.0",
     "clean-webpack-plugin": "^0.1.19",
     "css-loader": "^0.28.10",
     "eslint": "^4.18.1",
@@ -26,10 +28,13 @@
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.12.9",
     "style-loader": "^0.20.3",
     "uglifyjs-webpack-plugin": "^1.2.3",
     "webpack": "^4.1.1",
     "webpack-cli": "^2.0.11",
-    "webpack-merge": "^4.1.2"
+    "webpack-merge": "^4.1.2",
+    "xregexp": "^4.1.1"
   }
 }
