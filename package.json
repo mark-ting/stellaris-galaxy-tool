@@ -1,7 +1,7 @@
 {
   "name": "stellaris-galaxy-tool",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "Browser-based tool for editing Stellaris static galaxy scenario map files",
   "main": "server.js",
   "scripts": {
     "build": "npx webpack --config webpack.dev.js",
