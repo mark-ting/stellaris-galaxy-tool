@@ -433,14 +433,21 @@ export default class GalaxyApp {
       document.getElementById('system-id-display').value = 'None'
       document.getElementById('system-name-display').value = 'None'
       document.getElementById('system-init-display').value = 'None'
+      document.getElementById('system-spawn-base-display').value = 'None'
+      document.getElementById('system-spawn-add-display').value = 'None'
+      document.getElementById('system-country-flag-display').value = 'None'
       document.getElementById('linked-systems-display').value = 'Please select a system.'
       document.getElementById('system-lock-display').value = 'None'
       return
     }
 
-    document.getElementById('system-id-display').value = this.activeSystem
-    document.getElementById('system-name-display').value = this.Scenario.getSystem(this.activeSystem).name
-    document.getElementById('system-init-display').value = this.Scenario.getSystem(this.activeSystem).init ? this.Scenario.getSystem(this.activeSystem).init : 'No Initializer'
+    const system = this.Scenario.getSystem(this.activeSystem)
+    document.getElementById('system-id-display').value = system.id
+    document.getElementById('system-name-display').value = system.name
+    document.getElementById('system-init-display').value = system.hasOwnProperty('init') ? this.Scenario.getSystem(this.activeSystem).init : 'No Initializer'
+    document.getElementById('system-spawn-base-display').value = system.hasOwnProperty('spawnBase') ? system.spawnBase : 'N/A'
+    document.getElementById('system-spawn-add-display').value = system.hasOwnProperty('spawnAdd') ? system.spawnAdd : 'N/A'
+    document.getElementById('system-country-flag-display').value = system.hasOwnProperty('countryFlag') ? system.countryFlag : 'N/A'
 
     let linkedSystemText = ''
     for (const id of this.Scenario.adjSystems[this.activeSystem]) {
