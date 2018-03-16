@@ -4,10 +4,21 @@ export class SettingsHandler {
     this.initSettingsEvents()
   }
 
+  /**
+   * Loads a settings object into the current Scenario.
+   * @param {Object} settings Settings object as defined in the Scenario class
+   * @memberof SettingsHandler
+   */
   load (settings) {
     Object.assign(this.Scenario.settings, settings)
   }
 
+  /**
+   * Sets a specified setting's value.
+   * @param {string} setting Property name of setting inside Settings object.
+   * @param {string | number} value
+   * @memberof SettingsHandler
+   */
   set (setting, value) {
     if (!this.Scenario.settings.hasOwnProperty(setting)) {
       console.error(`'${setting}' is not a valid setting.`)
@@ -15,6 +26,13 @@ export class SettingsHandler {
     this.Scenario.settings[setting] = value
   }
 
+  /**
+   * Gets a specified setting's value.
+   * @param {string} setting Property name of setting inside Settings object.
+   * @param {string | number} value
+   * @returns {string | number}
+   * @memberof SettingsHandler
+   */
   get (setting) {
     if (!this.Scenario.settings.hasOwnProperty(setting)) {
       console.error(`'${setting}' is not a valid setting.`)
@@ -23,6 +41,10 @@ export class SettingsHandler {
     return this.Scenario.settings[setting]
   }
 
+  /**
+   * Initializes app UI events for loading and saving settings.
+   * @memberof SettingsHandler
+   */
   initSettingsEvents () {
     const bindEvent = (el, event, fn) => { document.getElementById(el).addEventListener(event, fn, false) }
 
@@ -54,6 +76,7 @@ export class SettingsHandler {
       this.set('randomHyperlanes', document.getElementById('settings-random-hyperlanes-check').checked)
     }
 
+    // TODO: move UI-bound events to an UI handler
     bindEvent('open-settings-btn', 'click', loadSettings)
     bindEvent('save-settings-btn', 'click', saveSettings)
   }

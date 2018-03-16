@@ -141,6 +141,11 @@ export class Parser {
     return settings
   }
 
+  /**
+   * Parses valid lines and returns an array of Systems.
+   * @returns {System[]}
+   * @memberof Parser
+   */
   parseSystems () {
     const systems = []
     const systemBaseExp = XRegExp(`system\\s*=\\s*{\\s*id\\s*=\\s*"(?P<id>[0-9]+)"\\s*name\\s*=\\s*"(?P<name>[A-Za-z0-9' _.-]*)"`)
@@ -198,6 +203,11 @@ export class Parser {
     return systems
   }
 
+  /**
+   * Parses valid lines and returns an array of arrays representing hyperlanes [src, dst].
+   * @returns {Array[]}
+   * @memberof Parser
+   */
   parseHyperlanes () {
     const hyperlaneExp = XRegExp(`\s*add_hyperlane\\s*=\\s*{\\s*from\\s*=\\s*"(?P<from>[-]?[0-9]+)"\\s*to =\\s*"(?P<to>[-]?[0-9]+)`)
     const hyperlanes = []
@@ -212,6 +222,11 @@ export class Parser {
     return hyperlanes
   }
 
+  /**
+   * Parses valid lines and returns an array of Nebulae.
+   * @returns {Nebula[]}
+   * @memberof Parser
+   */
   parseNebulae () {
     const nebulaExp = XRegExp(`\s*nebula\\s*=\\s*{\\s*name\\s*=\\s*"(?P<name>[A-Za-z0-9'\ _\./\\-]*)"\\s*position\\s*=\\s*{\\s*x\\s*=\\s*(?P<x>[-]?[0-9]+)\\s*y\\s*=\\s*(?P<y>[-]?[0-9]+)\\s*}\\s*radius\\s*=\\s*(?P<radius>[0-9]+)`)
     const nebulae = []
