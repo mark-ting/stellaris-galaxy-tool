@@ -11,13 +11,23 @@
 import { Point, Rectangle } from './GeometryLib'
 
 export class Datapoint {
-  constructor (data, loc) {
+  /**
+   * Creates a new Datapoint.
+   * @param {any} data Associated data payload. (Typically a string.)
+   * @param {Point} location
+   */
+  constructor (data, location) {
     this.data = data
-    this.location = loc
+    this.location = location
   }
 }
 
 export class QuadTree {
+  /**
+   * Creates a new QuadTree.
+   * @param {Rectangle} bounds Spatial area that QuadTree covers.
+   * @param {number} [capacity=5] Number of Datapoints to store in each (sub)node.
+   */
   constructor (bounds, capacity = 5) {
     this.bounds = bounds
     this.capacity = capacity
@@ -34,10 +44,8 @@ export class QuadTree {
 
   /**
    * Inserts a Datapoint into the QuadTree.
-   * Returns if Datapoint was successfully inserted.
-   * @param {Datapoint} dataPt
-   * @returns {boolean}
-   * @memberof QuadTree
+   * @param {Datapoint} dataPt Datapoint to insert.
+   * @returns {boolean} If Datapoint was successfully inserted.
    */
   insert (dataPt) {
     if (!this.bounds.contains(dataPt.location)) {
@@ -62,8 +70,7 @@ export class QuadTree {
   }
 
   /**
-   * Sets current node as parent and creates 4 child quadrants, each a QuadTree instance.
-   * @memberof QuadTree
+   * Converts current node to a parent and creates 4 child  QuadTree instances.
    */
   subdivide () {
     this.isParent = true
@@ -91,9 +98,8 @@ export class QuadTree {
 
   /**
    * Returns Datapoints in a specified search location.
-   * @param {(Point|Rectangle)} target
+   * @param {Point | Rectangle} target
    * @returns {Datapoint[]} Datapoints in/on target.
-   * @memberof QuadTree
    */
   query (target) {
     const rect = (target instanceof Rectangle) ? target : new Rectangle(new Point(target.x, target.y), 0, 0)
@@ -125,7 +131,6 @@ export class QuadTree {
    * @param {Point} location
    * @param {number} radius
    * @returns {Datapoint[]} Datapoints within radius of location.
-   * @memberof QuadTree
    */
   radialQuery (location, radius, criteria) {
     const searchPt = new Point(location.x - radius, location.y + radius)
@@ -138,7 +143,6 @@ export class QuadTree {
 
   /**
    * Clears and resets QuadTree.
-   * @memberof QuadTree
    */
   clear () {
     if (this.current > 0) {
@@ -156,8 +160,7 @@ export class QuadTree {
 
   /**
    * Returns all datapoints stored in QuadTree.
-   * @returns {Datapoint[]}
-   * @memberof QuadTree
+   * @returns {Datapoint[]} All Datapoints in QuadTree.
    */
   dump () {
     let datapoints = this.datapoints
@@ -172,7 +175,6 @@ export class QuadTree {
 
   /**
    * Removes and re-inserts all points in QuadTree.
-   * @memberof QuadTree
    */
   rebuild () {
     const datapoints = this.dump()
@@ -184,9 +186,8 @@ export class QuadTree {
   }
 
   /**
-   * Resizes QuadTree (per-node capacity) and rebuilds.
-   * @param {number} capacity
-   * @memberof QuadTree
+   * Resizes nodes of and rebuilds QuadTree.
+   * @param {number} capacity New per-node capacity.
    */
   repartition (capacity) {
     this.capacity = capacity
