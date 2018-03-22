@@ -137,7 +137,7 @@ export class QuadTree {
     const searchRect = new Rectangle(searchPt, 2 * radius, 2 * radius)
 
     const candidates = this.query(searchRect)
-    const results = candidates.filter(candidate => location.distanceTo(candidate.location) <= radius)
+    const results = candidates.filter(candidate => Point.distance(location, candidate.location) <= radius)
     return results
   }
 

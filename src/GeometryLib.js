@@ -10,16 +10,30 @@ export class Point {
     this.y = y
   }
 
-  equals (pt) {
+  equalTo (pt) {
     return (this.x === pt.x && this.y === pt.y)
   }
 
   distanceTo (pt) {
     return Math.sqrt((this.x - pt.x) * (this.x - pt.x) + (this.y - pt.y) * (this.y - pt.y))
   }
+
+  static equals (a, b) {
+    return (a.x === b.x && a.y === b.y)
+  }
+
+  static distance (a, b) {
+    return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y))
+  }
 }
 
 export class Rectangle {
+  /**
+   * Creates a new Rectangle.
+   * @param {any} tl Top-left corner of Rectangle.
+   * @param {any} width Width of Rectangle.
+   * @param {any} height Height of Rectangle.
+   */
   constructor (tl, width, height) {
     this.tl = tl
     this.w = width
@@ -28,7 +42,7 @@ export class Rectangle {
 
   equals (rect) {
     return (
-      (this.tl.equals(rect.tl)) &&
+      (Point.equals(this.tl, rect.tl)) &&
       (this.w === rect.w) &&
       (this.h = rect.h)
     )

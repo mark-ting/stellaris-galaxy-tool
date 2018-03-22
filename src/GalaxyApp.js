@@ -74,7 +74,7 @@ export default class GalaxyApp {
 
       let closestPt = null
       if (matches.length > 0) {
-        const matchDists = matches.map((datapoint) => clickPt.distanceTo(datapoint.location))
+        const matchDists = matches.map((datapoint) => Point.distance(clickPt, datapoint.location))
         const leastDist = Math.min(...matchDists)
         closestPt = matches[matchDists.indexOf(leastDist)]
       }
