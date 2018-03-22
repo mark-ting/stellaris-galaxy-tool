@@ -6,7 +6,7 @@ Browser-based tool for editing Stellaris static galaxy scenarios.
 
 ## Changes
 
-Please see the [CHANGELOG](CHANGELOG) for more details.
+Please see the [CHANGELOG](CHANGELOG.md) for more details.
 
 ## Known Issues
 * Commented-out lines (those beginning with `#`) in imported files are not ignored properly.
