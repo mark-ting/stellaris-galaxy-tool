@@ -10,7 +10,7 @@ export class EventHandler {
       document.getElementById(el).addEventListener(event, fn, false)
     }
     this.initSidebarEvents(App)
-    this.initSettingsModalEvents(App)
+    this.initSettingsEvents(App)
     this.initMapEvents(App)
   }
 
@@ -126,7 +126,7 @@ export class EventHandler {
    * Binds Settings Modal events.
    * @param {GalaxyApp} App
    */
-  initSettingsModalEvents (App) {
+  initSettingsEvents (App) {
     this.bindEvent('open-settings-btn', 'click', App.Settings.loadSettings)
     this.bindEvent('save-settings-btn', 'click', App.Settings.saveSettings)
   }
