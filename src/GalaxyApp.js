@@ -1,6 +1,7 @@
 import { Point, Rectangle } from './GeometryLib'
 import { QuadTree } from './QuadTree'
 import { System, Scenario, Nebula } from './StellarisLib'
+import { Layer, Renderer } from './Renderer'
 import { SettingsHandler } from './SettingsHandler'
 import { Parser } from './Parser'
 
@@ -21,16 +22,11 @@ export default class GalaxyApp {
 
     this.Settings.set('name', 'newStellarisMap')
 
-    // Canvas layers, objects, and readiness state
-    this.prerendered = false
-    this.primitives = {}
-    this.layers = {}
-
     // UI state
     this.lockedSystems = new Set()
     this.activeSystem = null
 
-    this.initMapLayers()
+    this.initRenderer()
     this.initMapEvents()
     this.initSidebarEvents()
     this.updateSidebarUI()
@@ -43,13 +39,17 @@ export default class GalaxyApp {
     this.activeSystem = null
   }
 
-  initMapLayers () {
-    this.layers.text = document.getElementById('text-layer')
-    this.layers.active = document.getElementById('active-layer')
-    this.layers.locked = document.getElementById('locked-layer')
-    this.layers.nebula = document.getElementById('nebula-layer')
-    this.layers.system = document.getElementById('system-layer')
-    this.layers.hyperlane = document.getElementById('hyperlane-layer')
+  initRenderer () {
+    const layers = [
+      new Layer('text', document.getElementById('text-layer')),
+      new Layer('active', document.getElementById('active-layer')),
+      new Layer('locked', document.getElementById('locked-layer')),
+      new Layer('nebula', document.getElementById('nebula-layer')),
+      new Layer('system', document.getElementById('system-layer')),
+      new Layer('hyperlane', document.getElementById('hyperlane-layer'))
+    ]
+
+    this.Renderer = new Renderer(4000, 4000, 5, this.bounds, layers)
   }
 
   initMapEvents () {
@@ -290,170 +290,35 @@ export default class GalaxyApp {
     }
   }
 
-  prerender () {
-    this.primitives = {}
-    const systemSize = 5
-    // // OLD Inactive system sprite
-    // const defaultSystem = document.createElement('canvas')
-    // defaultSystem.width = systemSize
-    // defaultSystem.height = systemSize
-    // const defaultSystemCtx = defaultSystem.getContext('2d')
-    // defaultSystemCtx.fillStyle = 'white'
-    // defaultSystemCtx.fillRect(0, 0, systemSize, systemSize)
-    // defaultSystemCtx.strokeStyle = 'gray'
-    // defaultSystemCtx.strokeRect(0, 0, systemSize, systemSize)
-    // this.primitives.defaultSystem = defaultSystem
-
-    // Inactive system sprite
-    const defaultSystem = document.createElement('canvas')
-    defaultSystem.width = systemSize
-    defaultSystem.height = systemSize
-    const defaultSystemCtx = defaultSystem.getContext('2d')
-    defaultSystemCtx.beginPath()
-    defaultSystemCtx.arc(systemSize / 2, systemSize / 2, systemSize / 2, 0, 2 * Math.PI, false)
-    defaultSystemCtx.fillStyle = 'gray'
-    defaultSystemCtx.strokeStyle = 'lightgray'
-    defaultSystemCtx.lineWidth = 1
-    defaultSystemCtx.fill()
-    defaultSystemCtx.stroke()
-    this.primitives.defaultSystem = defaultSystem
-
-    // Inactive system sprite
-    const lockedSystem = document.createElement('canvas')
-    lockedSystem.width = systemSize
-    lockedSystem.height = systemSize
-    const lockedSystemCtx = lockedSystem.getContext('2d')
-    lockedSystemCtx.beginPath()
-    lockedSystemCtx.arc(systemSize / 2, systemSize / 2, systemSize / 2, 0, 2 * Math.PI, false)
-    lockedSystemCtx.fillStyle = 'red'
-    lockedSystemCtx.strokeStyle = 'orange'
-    lockedSystemCtx.lineWidth = 1
-    lockedSystemCtx.fill()
-    lockedSystemCtx.stroke()
-    this.primitives.lockedSystem = lockedSystem
-
-    // Active system sprite
-    const activeSystem = document.createElement('canvas')
-    activeSystem.width = systemSize
-    activeSystem.height = systemSize
-    const activeSystemCtx = activeSystem.getContext('2d')
-    activeSystemCtx.beginPath()
-    activeSystemCtx.arc(systemSize / 2, systemSize / 2, systemSize / 2, 0, 2 * Math.PI, false)
-    activeSystemCtx.fillStyle = 'blue'
-    activeSystemCtx.strokeStyle = 'cyan'
-    activeSystemCtx.lineWidth = 1
-    activeSystemCtx.fill()
-    activeSystemCtx.stroke()
-    this.primitives.activeSystem = activeSystem
-
-    this.prerendered = true
-  }
-
-  drawSystem (systemId) {
-    const canvas = this.layers.system
-    const ctx = canvas.getContext('2d')
-    const system = this.Scenario.getSystem(systemId)
-    const location = system.location
-    ctx.drawImage(this.primitives.defaultSystem, 4 * (location.x + 500) - 2, 4 * (location.y + 500) - 2)
-  }
-
-  drawLockedSystem (systemId) {
-    const canvas = this.layers.locked
-    const ctx = canvas.getContext('2d')
-    const system = this.Scenario.getSystem(systemId)
-    const location = system.location
-    ctx.drawImage(this.primitives.lockedSystem, 4 * (location.x + 500) - 2, 4 * (location.y + 500) - 2)
-  }
-
-  drawActiveSystem () {
-    if (this.activeSystem) {
-      const location = this.Scenario.getSystem(this.activeSystem).location
-      const ctx = this.layers.active.getContext('2d')
-      ctx.drawImage(this.primitives.activeSystem, 4 * (location.x + 500) - 2, 4 * (location.y + 500) - 2)
-
-      // TODO: move to its own function
-      const textCtx = this.layers.text.getContext('2d')
-      textCtx.textAlign = 'center'
-      textCtx.textBaseline = 'middle'
-      textCtx.font = '14px sans-serif'
-      textCtx.fillStyle = 'white'
-      textCtx.strokeStyle = 'black'
-      ctx.lineWidth = 2
-      textCtx.shadowOffsetX = 2
-      textCtx.shadowOffsetY = 2
-      textCtx.shadowColor = 'black'
-      textCtx.shadowBlur = 5
-      textCtx.strokeText(this.Scenario.getSystem(this.activeSystem).name, 4 * (location.x + 500), 4 * (location.y + 500) - 12)
-      textCtx.fillText(this.Scenario.getSystem(this.activeSystem).name, 4 * (location.x + 500), 4 * (location.y + 500) - 12)
-    }
-  }
-
-  drawNebula (nebulaId) {
-    const nebula = this.Scenario.nebulae[nebulaId]
-    const location = nebula.location
-    const radius = nebula.radius
-    const canvas = this.layers.nebula
-    const ctx = canvas.getContext('2d')
-    ctx.beginPath()
-
-    ctx.arc(4 * (500 - location.x), 4 * (location.y + 500), radius, 0, 2 * Math.PI, false)
-    ctx.globalAlpha = 0.25
-    ctx.fillStyle = 'magenta'
-    ctx.fill()
-  }
-
-  drawHyperlane (s1, s2) {
-    const ctx = this.layers.hyperlane.getContext('2d')
-    const src = this.Scenario.getSystem(s1).location
-    const dst = this.Scenario.getSystem(s2).location
-    ctx.strokeStyle = 'cyan'
-    ctx.lineWidth = 0.75
-    ctx.beginPath()
-    ctx.moveTo(4 * (src.x + 500), 4 * (src.y + 500))
-    ctx.lineTo(4 * (dst.x + 500), 4 * (dst.y + 500))
-    ctx.stroke()
-  }
-
-  clearLayer (layer) {
-    const ctx = layer.getContext('2d')
-    ctx.clearRect(0, 0, this.width, this.height)
-  }
-
   render () {
-    if (!this.prerendered) {
-      this.prerender()
-    }
+    this.Renderer.clear()
 
     // Draw systems
-    this.clearLayer(this.layers.system)
     for (const systemId in this.Scenario.systems) {
-      this.drawSystem(systemId)
-    }
-
-    // Draw locked systems
-    this.clearLayer(this.layers.locked)
-    for (const systemId of this.lockedSystems) {
-      this.drawLockedSystem(systemId)
+      const system = this.Scenario.getSystem(systemId)
+      this.Renderer.drawSystem(system)
     }
 
     // Draw active system
-    this.clearLayer(this.layers.active)
-    this.clearLayer(this.layers.text)
-    this.drawActiveSystem()
+    if (this.activeSystem) {
+      const system = this.Scenario.getSystem(this.activeSystem)
+      this.Renderer.drawActiveSystem(system)
+    }
 
     // Draw hyperlanes
-    this.clearLayer(this.layers.hyperlane)
-    for (const src in this.Scenario.hyperlanes) {
-      const destinations = this.Scenario.hyperlanes[src]
-      for (const dst of destinations) {
-        this.drawHyperlane(src, dst)
+    for (const srcId in this.Scenario.hyperlanes) {
+      const destinations = this.Scenario.hyperlanes[srcId]
+      for (const dstId of destinations) {
+        const src = this.Scenario.getSystem(srcId).location
+        const dst = this.Scenario.getSystem(dstId).location
+        this.Renderer.drawHyperlane(src, dst)
       }
     }
 
     // Draw nebula
-    this.clearLayer(this.layers.nebula)
     for (const nebulaId in this.Scenario.nebulae) {
-      this.drawNebula(nebulaId)
+      const nebula = this.Scenario.nebulae[nebulaId]
+      this.Renderer.drawNebula(nebula)
     }
   }
 
