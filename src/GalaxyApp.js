@@ -1,23 +1,25 @@
 import { Point, Rectangle } from './GeometryLib'
 import { QuadTree } from './QuadTree'
 import { System, Scenario, Nebula } from './StellarisLib'
-import { Layer, Renderer } from './Renderer'
+import { Renderer } from './Renderer'
 import { SettingsHandler } from './SettingsHandler'
 import { EventHandler } from './EventHandler'
 import { Parser } from './Parser'
 
 export default class GalaxyApp {
   constructor () {
-    // Init base canvas params
+    // Init map spatial data
     this.width = 4000
     this.height = 4000
-
-    // Init map scenario data structures
     this.origin = new Point(-500, 500) // canvas (0, maxY)
     this.bounds = new Rectangle(this.origin, 1000, 1000)
+    this.calcLookupTransform()
+    this.Renderer = new Renderer(this, 5)
+    this.Datapoints = new QuadTree(this.bounds)
+
+    // Init Scenario data
     this.Scenario = new Scenario()
     this.Settings = new SettingsHandler(this.Scenario)
-    this.Datapoints = new QuadTree(this.bounds)
     this.Parser = new Parser()
     this.Events = new EventHandler(this)
 
@@ -27,9 +29,30 @@ export default class GalaxyApp {
     this.lockedSystems = new Set()
     this.activeSystem = null
 
-    this.initRenderer()
-    this.initMapEvents()
     this.updateSidebarUI()
+    this.render()
+  }
+
+  calcLookupTransform () {
+    // Coordinate data bounds
+    const minX = this.bounds.tl.x
+    const minY = this.bounds.tl.y - this.bounds.h
+
+    // Adjust for coordinate origin offset
+    this.translateX = -minX
+    this.translateY = -minY
+
+    // Adjust for max bound size
+    this.scaleX = this.width / this.bounds.w
+    this.scaleY = this.height / this.bounds.h
+  }
+
+  inverseTransX (x) {
+    return ((x / this.scaleX) - this.translateX)
+  }
+
+  inverseTransY (y) {
+    return ((y / this.scaleY) - this.translateY)
   }
 
   reset () {
@@ -37,83 +60,6 @@ export default class GalaxyApp {
     this.Datapoints.clear()
     this.lockedSystem = new Set()
     this.activeSystem = null
-  }
-
-  initRenderer () {
-    const layers = [
-      new Layer('text', document.getElementById('text-layer')),
-      new Layer('active', document.getElementById('active-layer')),
-      new Layer('locked', document.getElementById('locked-layer')),
-      new Layer('nebula', document.getElementById('nebula-layer')),
-      new Layer('system', document.getElementById('system-layer')),
-      new Layer('hyperlane', document.getElementById('hyperlane-layer'))
-    ]
-
-    this.Renderer = new Renderer(this.width, this.height, 5, this.bounds, layers)
-  }
-
-  initMapEvents () {
-    const bindEvent = (el, event, fn) => {
-      document.getElementById(el).addEventListener(event, fn, false)
-    }
-
-    const getClosestPt = (e) => {
-      const canvasRect = e.srcElement.getBoundingClientRect()
-      const canvasX = e.clientX - canvasRect.left
-      const canvasY = e.clientY - canvasRect.top
-
-      // TODO: implement scaling as a separate step
-      const adjX = Math.floor(canvasX) / 4 - 500
-      const adjY = Math.floor(canvasY) / 4 - 500
-
-      const clickPt = new Point(adjX, adjY)
-      const searchPt = new Point(adjX - 2, adjY + 2) // tl-corner adjust
-      const searchRect = new Rectangle(searchPt, 5, 5)
-
-      const matches = this.Datapoints.query(searchRect)
-
-      let closestPt = null
-      if (matches.length > 0) {
-        const matchDists = matches.map((datapoint) => Point.distance(clickPt, datapoint.location))
-        const leastDist = Math.min(...matchDists)
-        closestPt = matches[matchDists.indexOf(leastDist)]
-      }
-      return closestPt
-    }
-
-    bindEvent('map', 'mousedown', (e) => {
-      const closestPt = getClosestPt(e)
-      if (!closestPt) {
-        return
-      }
-      const clickedSystem = closestPt.data
-
-      if (!this.activeSystem) {
-        this.setActiveSystem(clickedSystem)
-      } else if (this.activeSystem !== clickedSystem) {
-        switch (true) {
-          case e.ctrlKey:
-            this.toggleHyperlane(this.activeSystem, clickedSystem)
-            break
-
-          case e.shiftKey:
-            this.toggleHyperlane(this.activeSystem, clickedSystem)
-            this.setActiveSystem(clickedSystem)
-            break
-
-          default:
-            this.setActiveSystem(clickedSystem)
-            break
-        }
-      } else {
-        this.setActiveSystem(null)
-      }
-      this.update()
-    })
-
-    bindEvent('download-map-btn', 'click', (e) => {
-      this.export()
-    })
   }
 
   getJSON (url) {
@@ -137,6 +83,22 @@ export default class GalaxyApp {
   addSystem (system) {
     this.Scenario.addSystem(system)
     this.Datapoints.insert(system.getDatapoint())
+  }
+
+  getSystemNear (clickPt) {
+    const adjX = Math.floor(this.inverseTransX(clickPt.x))
+    const adjY = Math.floor(this.inverseTransY(clickPt.x))
+    const adjClickPt = new Point(adjX, adjY)
+    const searchPt = new Point(adjX - 2, adjY + 2) // tl adjust for QuadTree
+    const searchRect = new Rectangle(searchPt, 5, 5)
+
+    const matches = this.Datapoints.query(searchRect)
+    if (matches.length > 0) {
+      const matchDists = matches.map((datapoint) => Point.distance(adjClickPt, datapoint.location))
+      const leastDist = Math.min(...matchDists)
+      const closestPt = matches[matchDists.indexOf(leastDist)]
+      return closestPt.data
+    }
   }
 
   async initData () {

@@ -1,59 +1,42 @@
-import { Point, Rectangle } from './GeometryLib'
-
-export class Layer {
-  constructor (name, canvas) {
-    this.canvas = canvas
-    this.name = name
-  }
-}
-
 export class Renderer {
   /**
    * Creates a new Renderer.
-   * @param {number} width Width of canvas in pixels.
-   * @param {number} height Height of canvas in pixels.
+   * @param {GalaxyApp} App Parent GalaxyApp.
    * @param {number} [systemSize=5] Size (width/height) of a System sprite in pixels.
-   * @param {Rectangle} databounds Rectangle representing data source coordinate bounds. Used to calculate data-render offsets.
-   * @param {Layer[]} [layerArr=[]] Array of layers.
    */
-  constructor (width, height, systemSize = 5, databounds = new Rectangle(new Point(0, 500), 1000, 1000), layerArr = []) {
-    this.width = width
-    this.height = height
+  constructor (App, systemSize = 5) {
+    // Get transform params from parent
+    this.scaleX = App.scaleX
+    this.scaleY = App.scaleY
+    this.translateX = App.translateX
+    this.translateY = App.translateY
 
     // Assign layers
-    this.layers = {}
-    for (let i = 0; i < layerArr.length; i++) {
-      const layer = layerArr[i]
-      this.layers[layer.name] = layer.canvas
+    this.layers = {
+      text: document.getElementById('text-layer'),
+      active: document.getElementById('active-layer'),
+      locked: document.getElementById('locked-layer'),
+      nebula: document.getElementById('nebula-layer'),
+      system: document.getElementById('system-layer'),
+      hyperlane: document.getElementById('hyperlane-layer')
     }
 
-    // Apply render offset
-    this.calcRenderOffset(databounds, systemSize)
+    // Apply render offset and prerender
+    this.calcRenderOffset(systemSize)
     this.prerender()
   }
 
-  calcRenderOffset (databounds, systemSize) {
-    const minX = databounds.tl.x
-    const minY = databounds.tl.y - databounds.h
-
-    // Adjust for coordinate origin offset
-    this.translateX = -minX
-    this.translateY = -minY
-
-    // Adjust for max bound size
-    this.scaleX = this.width / databounds.w
-    this.scaleY = this.height / databounds.h
-
-    // Offset functions
+  calcRenderOffset (systemSize) {
+    // Sprite offset functions
     this.systemSize = Math.abs((systemSize % 2 === 0) ? systemSize + 1 : systemSize) // ensure size is odd
     this.systemOffset = Math.floor(this.systemSize / 2)
   }
 
-  offsetX (x) {
+  transX (x) {
     return (this.scaleX * (x + this.translateX))
   }
 
-  offsetY (y) {
+  transY (y) {
     return this.scaleY * (y + this.translateY)
   }
 
@@ -110,21 +93,21 @@ export class Renderer {
     const canvas = this.layers.system
     const ctx = canvas.getContext('2d')
     const location = system.location
-    ctx.drawImage(this.sprites.defaultSystem, this.offsetX(location.x) - this.systemOffset, this.offsetY(location.y) - this.systemOffset)
+    ctx.drawImage(this.sprites.defaultSystem, this.transX(location.x) - this.systemOffset, this.transY(location.y) - this.systemOffset)
   }
 
   drawLockedSystem (system) {
     const canvas = this.layers.locked
     const ctx = canvas.getContext('2d')
     const location = system.location
-    ctx.drawImage(this.sprites.lockedSystem, this.offsetX(location.x) - this.systemOffset, this.offsetY(location.y) - this.systemOffset)
+    ctx.drawImage(this.sprites.lockedSystem, this.transX(location.x) - this.systemOffset, this.transY(location.y) - this.systemOffset)
   }
 
   // Remove system dependency
   drawActiveSystem (system) {
     const location = system.location
     const ctx = this.layers.active.getContext('2d')
-    ctx.drawImage(this.sprites.activeSystem, this.offsetX(location.x) - this.systemOffset, this.offsetY(location.y) - this.systemOffset)
+    ctx.drawImage(this.sprites.activeSystem, this.transX(location.x) - this.systemOffset, this.transY(location.y) - this.systemOffset)
 
     // TODO: move to its own function
     const textOffset = 12
@@ -139,8 +122,8 @@ export class Renderer {
     textCtx.shadowOffsetY = 2
     textCtx.shadowColor = 'black'
     textCtx.shadowBlur = 5
-    textCtx.strokeText(system.name, this.offsetX(location.x), this.offsetY(location.y) - textOffset)
-    textCtx.fillText(system.name, this.offsetX(location.x), this.offsetY(location.y) - textOffset)
+    textCtx.strokeText(system.name, this.transX(location.x), this.transY(location.y) - textOffset)
+    textCtx.fillText(system.name, this.transX(location.x), this.transY(location.y) - textOffset)
   }
 
   drawNebula (nebula) {
@@ -150,7 +133,7 @@ export class Renderer {
     const ctx = canvas.getContext('2d')
     ctx.beginPath()
     // TODO: fix mirroring of Nebula position
-    ctx.arc(this.offsetX(-location.x), this.offsetY(location.y), radius, 0, 2 * Math.PI, false)
+    ctx.arc(this.transX(-location.x), this.transY(location.y), radius, 0, 2 * Math.PI, false)
     ctx.globalAlpha = 0.25
     ctx.fillStyle = 'magenta'
     ctx.fill()
@@ -161,8 +144,8 @@ export class Renderer {
     ctx.strokeStyle = 'cyan'
     ctx.lineWidth = 0.75
     ctx.beginPath()
-    ctx.moveTo(this.offsetX(src.x), this.offsetY(src.y))
-    ctx.lineTo(this.offsetX(dst.x), this.offsetY(dst.y))
+    ctx.moveTo(this.transX(src.x), this.transY(src.y))
+    ctx.lineTo(this.transX(dst.x), this.transY(dst.y))
     ctx.stroke()
   }
 

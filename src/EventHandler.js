@@ -1,15 +1,17 @@
+import { Point } from './GeometryLib'
+
 export class EventHandler {
   /**
    * Creates a new EventHandler.
    * @param {GalaxyApp} App
    */
   constructor (App) {
-    console.log(App)
     this.bindEvent = (el, event, fn) => {
       document.getElementById(el).addEventListener(event, fn, false)
     }
     this.initSidebarEvents(App)
     this.initSettingsModalEvents(App)
+    this.initMapEvents(App)
   }
 
   /**
@@ -17,11 +19,7 @@ export class EventHandler {
    * @param {GalaxyApp} App
    */
   initSidebarEvents (App) {
-    const bindEvent = (el, event, fn) => {
-      document.getElementById(el).addEventListener(event, fn, false)
-    }
-
-    bindEvent('add-nearby-lanes-btn', 'click', (e) => {
+    this.bindEvent('add-nearby-lanes-btn', 'click', (e) => {
       if (!App.activeSystem || App.lockedSystems.has(App.activeSystem)) {
         return
       }
@@ -39,7 +37,7 @@ export class EventHandler {
       App.update()
     })
 
-    bindEvent('remove-nearby-lanes-btn', 'click', (e) => {
+    this.bindEvent('remove-nearby-lanes-btn', 'click', (e) => {
       if (!App.activeSystem || App.lockedSystems.has(App.activeSystem)) {
         return
       }
@@ -57,7 +55,7 @@ export class EventHandler {
       App.update()
     })
 
-    bindEvent('toggle-system-lock-btn', 'click', (e) => {
+    this.bindEvent('toggle-system-lock-btn', 'click', (e) => {
       if (!App.activeSystem) {
         return
       }
@@ -65,7 +63,7 @@ export class EventHandler {
       App.update()
     })
 
-    bindEvent('reset-btn', 'click', (e) => {
+    this.bindEvent('reset-btn', 'click', (e) => {
       if (window.confirm('Are you sure you want to reset the map? This cannot be undone!')) {
         App.reset()
         App.clearState()
@@ -73,7 +71,7 @@ export class EventHandler {
       }
     })
 
-    bindEvent('import-map-btn', 'click', (e) => {
+    this.bindEvent('import-map-btn', 'click', (e) => {
       const fileInput = document.getElementById('import-map-file-input')
       if (fileInput.files.length < 1) {
         return
@@ -133,6 +131,47 @@ export class EventHandler {
     this.bindEvent('save-settings-btn', 'click', App.Settings.saveSettings)
   }
 
-  initCanvasEvents (App) {
+  initMapEvents (App) {
+    const getCanvasClickPt = (e) => {
+      const canvasRect = e.srcElement.getBoundingClientRect()
+      const canvasX = e.clientX - canvasRect.left
+      const canvasY = e.clientY - canvasRect.top
+
+      return new Point(canvasX, canvasY)
+    }
+
+    this.bindEvent('map', 'mousedown', (e) => {
+      const clickPt = getCanvasClickPt(e)
+      const clickedSystem = App.getSystemNear(clickPt)
+      if (!clickedSystem) {
+        return
+      }
+
+      if (!App.activeSystem) {
+        App.setActiveSystem(clickedSystem)
+      } else if (App.activeSystem !== clickedSystem) {
+        switch (true) {
+          case e.ctrlKey:
+            App.toggleHyperlane(App.activeSystem, clickedSystem)
+            break
+
+          case e.shiftKey:
+            App.toggleHyperlane(App.activeSystem, clickedSystem)
+            App.setActiveSystem(clickedSystem)
+            break
+
+          default:
+            App.setActiveSystem(clickedSystem)
+            break
+        }
+      } else {
+        App.setActiveSystem(null)
+      }
+      App.update()
+    })
+
+    this.bindEvent('download-map-btn', 'click', (e) => {
+      App.export()
+    })
   }
 }
