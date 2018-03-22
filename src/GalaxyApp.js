@@ -3,6 +3,7 @@ import { QuadTree } from './QuadTree'
 import { System, Scenario, Nebula } from './StellarisLib'
 import { Layer, Renderer } from './Renderer'
 import { SettingsHandler } from './SettingsHandler'
+import { EventHandler } from './EventHandler'
 import { Parser } from './Parser'
 
 export default class GalaxyApp {
@@ -10,15 +11,15 @@ export default class GalaxyApp {
     // Init base canvas params
     this.width = 4000
     this.height = 4000
-    this.origin = new Point(-500, 500) // canvas (0, maxY)
-    this.bounds = new Rectangle(this.origin, 1000, 1000)
-
-    this.Parser = new Parser()
 
     // Init map scenario data structures
+    this.origin = new Point(-500, 500) // canvas (0, maxY)
+    this.bounds = new Rectangle(this.origin, 1000, 1000)
     this.Scenario = new Scenario()
     this.Settings = new SettingsHandler(this.Scenario)
     this.Datapoints = new QuadTree(this.bounds)
+    this.Parser = new Parser()
+    this.Events = new EventHandler(this)
 
     this.Settings.set('name', 'newStellarisMap')
 
@@ -28,13 +29,12 @@ export default class GalaxyApp {
 
     this.initRenderer()
     this.initMapEvents()
-    this.initSidebarEvents()
     this.updateSidebarUI()
   }
 
   reset () {
     this.Scenario.reset()
-    this.Datapoints = new QuadTree(this.bounds)
+    this.Datapoints.clear()
     this.lockedSystem = new Set()
     this.activeSystem = null
   }
@@ -49,7 +49,7 @@ export default class GalaxyApp {
       new Layer('hyperlane', document.getElementById('hyperlane-layer'))
     ]
 
-    this.Renderer = new Renderer(4000, 4000, 5, this.bounds, layers)
+    this.Renderer = new Renderer(this.width, this.height, 5, this.bounds, layers)
   }
 
   initMapEvents () {
@@ -113,114 +113,6 @@ export default class GalaxyApp {
 
     bindEvent('download-map-btn', 'click', (e) => {
       this.export()
-    })
-  }
-
-  initSidebarEvents () {
-    const bindEvent = (el, event, fn) => {
-      document.getElementById(el).addEventListener(event, fn, false)
-    }
-
-    bindEvent('add-nearby-lanes-btn', 'click', (e) => {
-      if (!this.activeSystem || this.lockedSystems.has(this.activeSystem)) {
-        return
-      }
-      const location = this.Scenario.getSystem(this.activeSystem).location
-      const searchRadius = parseInt(document.getElementById('link-radius-input').value, 10)
-      const results = this.Datapoints.radialQuery(location, searchRadius)
-      const resultIds = results.map(datapoint => datapoint.data)
-
-      for (let i = 0; i < results.length; i++) {
-        const dst = resultIds[i]
-        if (!this.lockedSystems.has(dst)) {
-          this.Scenario.addHyperlane(this.activeSystem, dst)
-        }
-      }
-      this.update()
-    })
-
-    bindEvent('remove-nearby-lanes-btn', 'click', (e) => {
-      if (!this.activeSystem || this.lockedSystems.has(this.activeSystem)) {
-        return
-      }
-      const location = this.Scenario.getSystem(this.activeSystem).location
-      const searchRadius = parseInt(document.getElementById('link-radius-input').value, 10)
-      const results = this.Datapoints.radialQuery(location, searchRadius)
-      const resultIds = results.map(datapoint => datapoint.data)
-
-      for (let i = 0; i < results.length; i++) {
-        const dst = resultIds[i]
-        if (!this.lockedSystems.has(dst)) {
-          this.Scenario.removeHyperlane(this.activeSystem, dst)
-        }
-      }
-      this.update()
-    })
-
-    bindEvent('toggle-system-lock-btn', 'click', (e) => {
-      if (!this.activeSystem) {
-        return
-      }
-      this.toggleActiveSystemLock()
-      this.update()
-    })
-
-    bindEvent('reset-btn', 'click', (e) => {
-      if (window.confirm('Are you sure you want to reset the map? This cannot be undone!')) {
-        this.reset()
-        this.clearState()
-        window.location.reload()
-      }
-    })
-
-    bindEvent('import-map-btn', 'click', (e) => {
-      const fileInput = document.getElementById('import-map-file-input')
-      if (fileInput.files.length < 1) {
-        return
-      }
-
-      if (!window.confirm('Are you sure you want to import a map? This cannot be undone!')) {
-        return
-      }
-
-      const file = fileInput.files[0]
-      if (!file.type.match('text.*')) {
-        window.alert('File must be a .txt file!')
-        return
-      }
-
-      this.Parser.loadFile(file)
-        .then(() => {
-          this.reset()
-          this.clearState()
-
-          const settings = this.Parser.parseSettings()
-          const systems = this.Parser.parseSystems()
-          const hyperlanes = this.Parser.parseHyperlanes()
-          const nebulae = this.Parser.parseNebulae()
-
-          this.Settings.load(settings)
-
-          // Rebuild Scenario state
-          for (let i = 0; i < systems.length; i++) {
-            const system = systems[i]
-            this.addSystem(system)
-          }
-
-          for (let i = 0; i < hyperlanes.length; i++) {
-            const hyperlane = hyperlanes[i]
-            const src = hyperlane[0]
-            const dst = hyperlane[1]
-            this.Scenario.addHyperlane(src, dst)
-          }
-
-          for (let i = 0; i < nebulae.length; i++) {
-            const nebula = nebulae[i]
-            this.Scenario.addNebula(nebula)
-          }
-
-          this.update()
-        })
     })
   }
 
@@ -297,6 +189,12 @@ export default class GalaxyApp {
     for (const systemId in this.Scenario.systems) {
       const system = this.Scenario.getSystem(systemId)
       this.Renderer.drawSystem(system)
+    }
+
+    // Draw locked systems
+    for (const systemId of this.lockedSystems) {
+      const system = this.Scenario.getSystem(systemId)
+      this.Renderer.drawLockedSystem(system)
     }
 
     // Draw active system

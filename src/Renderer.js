@@ -139,8 +139,8 @@ export class Renderer {
     textCtx.shadowOffsetY = 2
     textCtx.shadowColor = 'black'
     textCtx.shadowBlur = 5
-    textCtx.strokeText(this.offsetX(location.x), this.offsetY(location.y) - textOffset)
-    textCtx.fillText(this.offsetX(location.x), this.offsetY(location.y) - textOffset)
+    textCtx.strokeText(system.name, this.offsetX(location.x), this.offsetY(location.y) - textOffset)
+    textCtx.fillText(system.name, this.offsetX(location.x), this.offsetY(location.y) - textOffset)
   }
 
   drawNebula (nebula) {
