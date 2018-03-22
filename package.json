@@ -33,6 +33,7 @@
     "style-loader": "^0.20.3",
     "uglifyjs-webpack-plugin": "^1.2.3",
     "webpack": "^4.1.1",
+    "webpack-bundle-analyzer": "^2.11.1",
     "webpack-cli": "^2.0.11",
     "webpack-merge": "^4.1.2",
     "xregexp": "^4.1.1"
