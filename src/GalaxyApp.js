@@ -174,17 +174,18 @@ export default class GalaxyApp {
     })
 
     bindEvent('import-map-btn', 'click', (e) => {
-      if (!window.confirm('Are you sure you want to import a map? This cannot be undone!')) {
-        return
-      }
-
       const fileInput = document.getElementById('import-map-file-input')
       if (fileInput.files.length < 1) {
         return
       }
 
+      if (!window.confirm('Are you sure you want to import a map? This cannot be undone!')) {
+        return
+      }
+
       const file = fileInput.files[0]
       if (!file.type.match('text.*')) {
+        window.alert('File must be a .txt file!')
         return
       }
 
@@ -277,7 +278,7 @@ export default class GalaxyApp {
   }
 
   toggleHyperlane (s1, s2) {
-    // No self-loops and interacting with locked systems
+    // No self-loops or interacting with locked systems
     if (s1 === s2 || this.lockedSystems.has(s1) || this.lockedSystems.has(s2)) {
       return
     }

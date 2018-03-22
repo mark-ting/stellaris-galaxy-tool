@@ -50,48 +50,48 @@
             <div class="form-row">
               <div class="form-group col-8">
                 <label for="settings-name-input">name</label>
-                <input type="text" class="form-control" id="settings-name-input" placeholder="Map Name">
+                <input type="text" class="form-control form-control-sm" id="settings-name-input" placeholder="Map Name">
               </div>
               <div class="form-group col-4">
                 <label for="settings-priority-input">priority</label>
-                <input type="number" class="form-control" id="settings-priority-input" placeholder="Priority">
+                <input type="number" class="form-control form-control-sm" id="settings-priority-input" placeholder="Priority">
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group col-4">
                 <label for="settings-empire-min-input">num_empires.min</label>
-                <input type="number" class="form-control" id="settings-empire-min-input" min="0" step="1" placeholder="Min">
+                <input type="number" class="form-control form-control-sm" id="settings-empire-min-input" min="0" step="1" placeholder="Min">
               </div>
               <div class="form-group col-4">
                 <label for="settings-empire-max-input">num_empires.max</label>
-                <input type="number" class="form-control" id="settings-empire-max-input" min="0" step="1" placeholder="Max">
+                <input type="number" class="form-control form-control-sm" id="settings-empire-max-input" min="0" step="1" placeholder="Max">
               </div>
               <div class="form-group col-4">
                 <label for="settings-empire-default-input">num_empire_default</label>
-                <input type="number" class="form-control" id="settings-empire-default-input" min="0" step="1" placeholder="Default">
+                <input type="number" class="form-control form-control-sm" id="settings-empire-default-input" min="0" step="1" placeholder="Default">
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group col-4">
                 <label for="settings-fallen-default-input">fallen_empire_default</label>
-                <input type="number" class="form-control" id="settings-fallen-default-input" min="0" step="1" placeholder="Default">
+                <input type="number" class="form-control form-control-sm" id="settings-fallen-default-input" min="0" step="1" placeholder="Default">
               </div>
               <div class="form-group col-4">
                 <label for="settings-fallen-max-input">fallen_empire_max</label>
-                <input type="number" class="form-control" id="settings-fallen-max-input" min="0" step="1" placeholder="Max">
+                <input type="number" class="form-control form-control-sm" id="settings-fallen-max-input" min="0" step="1" placeholder="Max">
               </div>
               <div class="form-group col-4">
                 <label for="settings-advanced-default-input">advanced_empire_default</label>
-                <input type="number" class="form-control" id="settings-advanced-default-input" min="0" step="1" placeholder="Default">
+                <input type="number" class="form-control form-control-sm" id="settings-advanced-default-input" min="0" step="1" placeholder="Default">
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group col-4">
                 <label for="settings-fallen-default-input">colonizable_planet_odds</label>
-                <input type="number" class="form-control" id="settings-colonizable-odds-input" min="0" max="1" step="0.01" placeholder="Odds">
+                <input type="number" class="form-control form-control-sm" id="settings-colonizable-odds-input" min="0" max="1" step="0.01" placeholder="Odds">
               </div>
             </div>
 
@@ -116,7 +116,7 @@
 
   <main class="container-fluid">
     <div class="row">
-      <!-- Canvas UI -->
+      <!-- Map/Canvas UI -->
       <div id="map" class="col-10">
         <canvas class="map-layer" id="text-layer" width="4000" height="4000"></canvas>
         <canvas class="map-layer" id="active-layer" width="4000" height="4000"></canvas>
@@ -127,56 +127,55 @@
         <canvas class="map-layer" id="background-layer" width="4000" height="4000"></canvas>
       </div>
 
-      <!-- Controls Sidebar UI -->
+      <!-- Sidebar UI -->
       <div id="sidebar" class="col-2">
         <form>
           <div class="form-row">
             <div class="form-group col-4">
               <label for="system-id-display">System ID</label>
-              <input type="text" class="form-control" id="system-id-display" readonly>
+              <input type="text" class="form-control form-control-sm" id="system-id-display" tabindex="-1" readonly>
             </div>
 
             <div class="form-group col-8">
               <label for="system-name-display">System Name</label>
-              <input type="text" class="form-control" id="system-name-display" readonly>
+              <input type="text" class="form-control form-control-sm" id="system-name-display" readonly>
             </div>
           </div>
 
           <div class="form-group">
             <label for="system-init-display">System Initializer</label>
-            <input type="text" class="form-control" id="system-init-display" readonly>
+            <input type="text" class="form-control form-control-sm" id="system-init-display" readonly>
           </div>
 
           <div class="form-row">
             <div class="form-group col-3">
               <label for="system-spawn-base-display">S. Base</label>
-              <input type="text" class="form-control" id="system-spawn-base-display" readonly>
+              <input type="text" class="form-control form-control-sm" id="system-spawn-base-display" readonly>
             </div>
 
             <div class="form-group col-3">
               <label for="system-spawn-add-display">S. Add</label>
-              <input type="text" class="form-control" id="system-spawn-add-display" readonly>
+              <input type="text" class="form-control form-control-sm" id="system-spawn-add-display" readonly>
             </div>
 
             <div class="form-group col-6">
               <label for="system-country-flag-displa">Flag</label>
-              <input type="text" class="form-control" id="system-country-flag-display" readonly>
+              <input type="text" class="form-control form-control-sm" id="system-country-flag-display" readonly>
             </div>
           </div>
 
           <div class="form-group">
             <label for="linked-systems-display">Linked Systems</label>
-            <textarea class="form-control" id="linked-systems-display" rows="10" readonly></textarea>
-            <small class="form-text text-muted">Linked systems may not be in sorted order..</small>
+            <textarea class="form-control form-control-sm" id="linked-systems-display" rows="6" tabindex="-1" readonly></textarea>
           </div>
 
           <div class="form-group">
-            <label for="toggle-system-lock-btn">System Lock</label>
+            <!-- <label for="toggle-system-lock-btn">System Lock</label> -->
             <div class="input-group">
               <div class="input-group-prepend">
-                <button class="btn btn-info" id="toggle-system-lock-btn" type="button">Toggle</button>
+                <button class="btn btn-info" id="toggle-system-lock-btn" type="button">Toggle Lock</button>
               </div>
-              <input type="text" id="system-lock-display" class="form-control" readonly>
+              <input type="text" id="system-lock-display" class="form-control form-control-sm" tabindex="-1" readonly>
             </div>
             <small class="form-text text-muted">Lock prevents edits to incoming/outing lanes.</small>
           </div>
@@ -187,7 +186,7 @@
               <div class="input-group-prepend">
                 <button class="btn btn-primary" id="add-nearby-lanes-btn" type="button">Add</button>
               </div>
-              <input type="number" class="form-control" id="link-radius-input" min="0" max="1000" step="1" value="50" placeholder="Radius">
+              <input type="number" class="form-control form-control-sm" id="link-radius-input" min="0" max="1000" step="1" value="50" placeholder="Radius">
               <div class="input-group-append">
                 <button id="remove-nearby-lanes-btn" class="btn btn-danger" type="button">Remove</button>
               </div>
@@ -196,9 +195,9 @@
           </div>
 
           <div class="form-group">
-            <label for="download-map-btn">Export Static Galaxy Scenario</label>
+            <label for="map-name-input">Export Static Galaxy Scenario</label>
             <div class="input-group">
-              <input type="text" class="form-control" id="map-name-input" placeholder="File Name">
+              <input type="text" class="form-control form-control-sm" id="map-name-input" placeholder="File Name">
               <div class="input-group-append">
                 <button id="download-map-btn" class="btn btn-success" type="button">Save</button>
               </div>
