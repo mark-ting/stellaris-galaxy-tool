@@ -1,4 +1,5 @@
-import { Point, Rectangle, QuadTree } from './QuadTree'
+import { Point, Rectangle } from './GeometryLib'
+import { QuadTree } from './QuadTree'
 import { System, Scenario, Nebula } from './StellarisLib'
 import { SettingsHandler } from './SettingsHandler'
 import { Parser } from './Parser'

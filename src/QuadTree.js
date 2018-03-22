@@ -8,63 +8,16 @@
  * https://gamedevelopment.tutsplus.com/tutorials/quick-tip-use-quadtrees-to-detect-likely-collisions-in-2d-space--gamedev-374
  */
 
-class Point {
-  constructor (x, y) {
-    this.x = x
-    this.y = y
-  }
+import { Point, Rectangle } from './GeometryLib'
 
-  equals (pt) {
-    return (this.x === pt.x && this.y === pt.y)
-  }
-
-  distanceTo (pt) {
-    return Math.sqrt((this.x - pt.x) * (this.x - pt.x) + (this.y - pt.y) * (this.y - pt.y))
-  }
-}
-
-class Datapoint {
+export class Datapoint {
   constructor (data, loc) {
     this.data = data
     this.location = loc
   }
 }
 
-class Rectangle {
-  constructor (tl, w, h) {
-    this.tl = tl
-    this.w = w
-    this.h = h
-  }
-
-  equals (rect) {
-    return (
-      (this.tl.isEqualTo(rect.tl)) &&
-      (this.w === rect.w) &&
-      (this.h = rect.h)
-    )
-  }
-
-  intersects (rect) {
-    return !(
-      (this.tl.x + this.w < rect.tl.x) ||
-      (this.tl.x > rect.tl.x + rect.w) ||
-      (this.tl.y - this.h > rect.tl.y) ||
-      (this.tl.y < rect.tl.y - rect.h)
-    )
-  }
-
-  contains (pt) {
-    return (
-      (pt.x >= this.tl.x) &&
-      (pt.x <= this.tl.x + this.w) &&
-      (pt.y <= this.tl.y) &&
-      (pt.y >= this.tl.y - this.h)
-    )
-  }
-}
-
-class QuadTree {
+export class QuadTree {
   constructor (bounds, capacity = 5) {
     this.bounds = bounds
     this.capacity = capacity
@@ -240,5 +193,3 @@ class QuadTree {
     this.rebuild()
   }
 }
-
-export { Point, Datapoint, Rectangle, QuadTree }

@@ -1,5 +1,3 @@
-import { Point, Datapoint } from './QuadTree'
-
 /*
  * StellarisLib.js
  *
@@ -11,6 +9,9 @@ import { Point, Datapoint } from './QuadTree'
  * In the undirected adjacency list, links are stored twice (a:b and b:a) for ease of access.
  * In the directed adjacency list, hyperlanes are stored with the smaller system as stems and larger systems as leaves.
  */
+
+import { Point } from './GeometryLib'
+import { Datapoint } from './QuadTree'
 
 export class System {
   constructor (id, name, x, y, init) {
