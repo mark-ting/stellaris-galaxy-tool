@@ -166,11 +166,11 @@ export class Parser {
         const xPosMatch = XRegExp.exec(curLine, systemXPosExp)
         if (xPosMatch) {
           if (xPosMatch.x) {
-            system.x = -1 * parseInt(xPosMatch.x, 10)
+            system.x = parseInt(xPosMatch.x, 10)
           } else {
             system.minX = parseInt(xPosMatch.min, 10)
             system.maxX = parseInt(xPosMatch.max, 10)
-            system.x = Math.floor(-1 * (system.minX + system.maxX) / 2)
+            system.x = Math.floor((system.minX + system.maxX) / 2)
           }
         }
 

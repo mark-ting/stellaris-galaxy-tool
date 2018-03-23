@@ -6,6 +6,8 @@ export class Renderer {
    */
   constructor (App, systemSize = 5) {
     // Get transform params from parent
+    this.width = App.width
+    this.height = App.height
     this.scaleX = App.scaleX
     this.scaleY = App.scaleY
     this.translateX = App.translateX
@@ -33,7 +35,8 @@ export class Renderer {
   }
 
   transX (x) {
-    return (this.scaleX * (x + this.translateX))
+    // Account for Y-axis mirroring
+    return (this.scaleX * (-1 * x + this.translateX))
   }
 
   transY (y) {
@@ -133,7 +136,7 @@ export class Renderer {
     const ctx = canvas.getContext('2d')
     ctx.beginPath()
     // TODO: fix mirroring of Nebula position
-    ctx.arc(this.transX(-location.x), this.transY(location.y), radius, 0, 2 * Math.PI, false)
+    ctx.arc(this.transX(location.x), this.transY(location.y), radius, 0, 2 * Math.PI, false)
     ctx.globalAlpha = 0.25
     ctx.fillStyle = 'magenta'
     ctx.fill()

@@ -1,7 +1,6 @@
 export class SettingsHandler {
   constructor (Scenario) {
     this.Scenario = Scenario
-    this.initSettingsEvents()
   }
 
   /**

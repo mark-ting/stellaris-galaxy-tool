@@ -48,7 +48,8 @@ export default class GalaxyApp {
   }
 
   inverseTransX (x) {
-    return ((x / this.scaleX) - this.translateX)
+    // Account for Y-axis mirroring
+    return (-1 * (x / this.scaleX - this.translateX))
   }
 
   inverseTransY (y) {
@@ -87,7 +88,7 @@ export default class GalaxyApp {
 
   getSystemNear (clickPt) {
     const adjX = Math.floor(this.inverseTransX(clickPt.x))
-    const adjY = Math.floor(this.inverseTransY(clickPt.x))
+    const adjY = Math.floor(this.inverseTransY(clickPt.y))
     const adjClickPt = new Point(adjX, adjY)
     const searchPt = new Point(adjX - 2, adjY + 2) // tl adjust for QuadTree
     const searchRect = new Rectangle(searchPt, 5, 5)
