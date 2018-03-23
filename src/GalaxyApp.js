@@ -28,9 +28,13 @@ export default class GalaxyApp {
     // UI state
     this.lockedSystems = new Set()
     this.activeSystem = null
-
-    this.updateSidebarUI()
-    this.render()
+    this.changes = {
+      active: true,
+      systems: true,
+      locked: true,
+      hyperlane: true,
+      nebula: true
+    }
   }
 
   calcLookupTransform () {
@@ -61,6 +65,13 @@ export default class GalaxyApp {
     this.Datapoints.clear()
     this.lockedSystem = new Set()
     this.activeSystem = null
+    this.changes = {
+      active: true,
+      systems: true,
+      locked: true,
+      hyperlane: true,
+      nebula: true
+    }
   }
 
   getJSON (url) {
@@ -84,6 +95,7 @@ export default class GalaxyApp {
   addSystem (system) {
     this.Scenario.addSystem(system)
     this.Datapoints.insert(system.getDatapoint())
+    this.changes.system = true
   }
 
   getSystemNear (clickPt) {
@@ -119,6 +131,7 @@ export default class GalaxyApp {
     if (this.Scenario.getSystem(systemId)) {
       this.activeSystem = systemId
     }
+    this.changes.active = true
   }
 
   toggleActiveSystemLock () {
@@ -130,6 +143,7 @@ export default class GalaxyApp {
     } else {
       this.lockedSystems.add(this.activeSystem)
     }
+    this.changes.locked = true
   }
 
   toggleHyperlane (s1, s2) {
@@ -143,43 +157,64 @@ export default class GalaxyApp {
     } else {
       this.Scenario.addHyperlane(s1, s2)
     }
+    this.changes.hyperlane = true
   }
 
   render () {
-    this.Renderer.clear()
-
-    // Draw systems
-    for (const systemId in this.Scenario.systems) {
-      const system = this.Scenario.getSystem(systemId)
-      this.Renderer.drawSystem(system)
-    }
-
-    // Draw locked systems
-    for (const systemId of this.lockedSystems) {
-      const system = this.Scenario.getSystem(systemId)
-      this.Renderer.drawLockedSystem(system)
-    }
-
-    // Draw active system
-    if (this.activeSystem) {
-      const system = this.Scenario.getSystem(this.activeSystem)
-      this.Renderer.drawActiveSystem(system)
-    }
-
-    // Draw hyperlanes
-    for (const srcId in this.Scenario.hyperlanes) {
-      const destinations = this.Scenario.hyperlanes[srcId]
-      for (const dstId of destinations) {
-        const src = this.Scenario.getSystem(srcId).location
-        const dst = this.Scenario.getSystem(dstId).location
-        this.Renderer.drawHyperlane(src, dst)
+    if (this.changes.system) {
+      // Draw systems
+      this.Renderer.clearLayerByName('system')
+      for (const systemId in this.Scenario.systems) {
+        const system = this.Scenario.getSystem(systemId)
+        this.Renderer.drawSystem(system)
       }
+      this.changes.system = false
     }
 
-    // Draw nebula
-    for (const nebulaId in this.Scenario.nebulae) {
-      const nebula = this.Scenario.nebulae[nebulaId]
-      this.Renderer.drawNebula(nebula)
+    if (this.changes.locked) {
+      // Draw locked systems
+      this.Renderer.clearLayerByName('locked')
+      for (const systemId of this.lockedSystems) {
+        const system = this.Scenario.getSystem(systemId)
+        this.Renderer.drawLockedSystem(system)
+      }
+      this.changes.locked = false
+    }
+
+    if (this.changes.active) {
+      // Draw active system
+      this.Renderer.clearLayerByName('active')
+      this.Renderer.clearLayerByName('text')
+      if (this.activeSystem) {
+        const system = this.Scenario.getSystem(this.activeSystem)
+        this.Renderer.drawActiveSystem(system)
+      }
+      this.changes.active = false
+    }
+
+    if (this.changes.hyperlane) {
+      // Draw hyperlanes
+      this.Renderer.clearLayerByName('hyperlane')
+
+      for (const srcId in this.Scenario.hyperlanes) {
+        const destinations = this.Scenario.hyperlanes[srcId]
+        for (const dstId of destinations) {
+          const src = this.Scenario.getSystem(srcId).location
+          const dst = this.Scenario.getSystem(dstId).location
+          this.Renderer.drawHyperlane(src, dst)
+        }
+      }
+      this.changes.hyperlane = false
+    }
+
+    if (this.changes.nebula) {
+      // Draw nebulae
+      this.Renderer.clearLayerByName('nebula')
+      for (const nebulaId in this.Scenario.nebulae) {
+        const nebula = this.Scenario.nebulae[nebulaId]
+        this.Renderer.drawNebula(nebula)
+      }
+      this.changes.nebula = false
     }
   }
 
@@ -253,7 +288,16 @@ export default class GalaxyApp {
         this.Scenario.addHyperlane(s1, s2)
       }
 
+      this.activeSystem = null
       this.lockedSystems = new Set(importedLocks)
+      this.changes = {
+        active: true,
+        systems: true,
+        locked: true,
+        hyperlane: true,
+        nebula: true
+      }
+
       this.update()
     }
   }
